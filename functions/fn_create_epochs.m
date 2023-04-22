@@ -1,4 +1,4 @@
-function [epoch_data, epoch_time, stimulus_sample, target_indices] = fn_create_epochs(y, trig, pre_stimulus_samples, post_stimulus_samples)
+function [epoch_data, epoch_time, stimulus_sample, target_indices] = fn_create_epochs2(y, trig, pre_stimulus_samples, post_stimulus_samples,tgt_or_ntgt)
 % Create epochs based on target triggers in the trig variable, centered
 % around the stimulus onset time.
 %
@@ -18,7 +18,14 @@ function [epoch_data, epoch_time, stimulus_sample, target_indices] = fn_create_e
 epoch_length = pre_stimulus_samples + post_stimulus_samples + 1;
 
 % Find the indices of target epochs in the trig variable
-target_indices = find(trig == 1);
+% Find the indices of target or non-target epochs in the trig variable
+if tgt_or_ntgt == 1
+    target_indices = find(trig == 1);
+elseif tgt_or_ntgt == -1
+    target_indices = find(trig == -1);
+else
+    error('Invalid tgt_or_ntgt argument. Must be 1 for target or -1 for non-target epochs.');
+end
 
 % Initialize the epoch matrix
 num_epochs = length(target_indices);
