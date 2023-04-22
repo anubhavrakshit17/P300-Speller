@@ -1,22 +1,19 @@
 clc
 clear all
 close all
-%%
 % Add functions folder to the matlab path using 'set path'
 addpath("hackathon\dataset\")
 addpath("hackathon\functions\")
-%%
 load ("S1.mat");
-
 %%
 % Filter signal using bandpass filter
-fn_plot_time_domain(y, trig, fs,2,0);
+%fn_plot_time_domain(y, trig, fs,2,0);
 %%
 y_filtered = fn_filtering(y, fs, 'bandpass', 8, 60,4);
 %%
-fn_plot_time_domain(y_filtered, trig, fs,2,0);
+%fn_plot_time_domain(y_filtered, trig, fs,2,0);
 %%
-fn_plot_spectrograms(y,y_filtered,fs)
+%fn_plot_spectrograms(y,y_filtered,fs)
 
 %%
 [y_ica, A, W] = fn_ica(y_filtered, 8);
@@ -42,19 +39,22 @@ y_ica_rejected(:,components_to_reject) = 0;
 % Reconstruct the signal by multiplying the rejected ICA components by their mixing matrix
 y_reconstructed = y_ica_rejected * W';
 %%
-fn_plot_time_domain(y_reconstructed, trig, fs,1,0);
+%fn_plot_time_domain(y_reconstructed, trig, fs,1,0);
 %%
-figure
-fn_plot_time_domain(y, trig, fs,2,0);
+%figure
+%fn_plot_time_domain(y, trig, fs,2,0);
 %%
 % Define the pre-stimulus and post-stimulus periods in samples
 pre_stimulus_samples = 300;
 post_stimulus_samples = 700;
 
 % Call the function to extract and display epochs
-epoch_data = fn_create_epochs(y_reconstructed, trig, pre_stimulus_samples, post_stimulus_samples);
+target_epoch_data = fn_create_epochs(y_reconstructed, trig, pre_stimulus_samples, post_stimulus_samples,1);
+nontarget_epoch_data = fn_create_epochs(y_reconstructed, trig, pre_stimulus_samples, post_stimulus_samples,-1);
+
 %%
-fn_plot_ERP(epoch_data,pre_stimulus_samples,post_stimulus_samples,2);
+fn_plot_ERP(target_epoch_data,pre_stimulus_samples,post_stimulus_samples,2);
+fn_plot_ERP(nontarget_epoch_data,pre_stimulus_samples,post_stimulus_samples,2);
 
 
 
