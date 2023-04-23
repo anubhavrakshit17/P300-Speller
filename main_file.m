@@ -1,69 +1,64 @@
-clc
 clear all
 close all
+
 % Add functions folder to the matlab path using 'set path'
+addpath("hackathon\")
 addpath("hackathon\dataset\")
 addpath("hackathon\functions\")
-load ("S1.mat");
+%%
+filename = "S5.mat"; % replace with the actual filename
+load(filename);
+
+% Extract the subject ID from the filename
+[~, name, ext] = fileparts(filename);
+subject_id = extractBetween(name, 1, 2); % assuming subject ID is 2 characters
+%%
 %%
 % Filter signal using bandpass filter
-%fn_plot_time_domain(y, trig, fs,2,0);
-%%
-y_filtered = fn_filtering(y, fs, 'bandpass', 8, 60,4);
-%%
-%fn_plot_time_domain(y_filtered, trig, fs,2,0);
-%%
-fn_plot_spectrograms(y,y_filtered,fs)
+%fn_plot_time_domain(y, trig, fs, 2, 0);
 
 %%
-[y_ica, A, W] = fn_ica(y_filtered, 8);
-% Assume y_ica is the demixed signal obtained from ICA
-num_components = size(y_ica, 2); % get the number of independent components
+% Apply bandpass filter to the signal
+y_filtered = fn_filtering(y, fs, 'bandpass', 8, 30, 4);
 
-% Create a figure with subplots for each component
-figure;
-for i = 1:num_components
-    subplot(num_components, 1, i);
-    plot(y_ica(:,i));
-    title(['ICA Component ' num2str(i)]);
-end
 %%
-% Assume y_ica is the demixed signal obtained from ICA
-% and components 5, 6, 7, and 8 are to be rejected.
+% Plot the filtered signal
+%fn_plot_time_domain(y_filtered, trig, fs, 2, 0);
 
-% Set the columns corresponding to the rejected components to zero
-components_to_reject = [5, 6, 7, 8];
-y_ica_rejected = y_ica;
-y_ica_rejected(:,components_to_reject) = 0;
+%%
+% Plot the spectrograms
+%fn_plot_spectrograms(y, y_filtered, fs);
 
-% Reconstruct the signal by multiplying the rejected ICA components by their mixing matrix
-y_reconstructed = y_ica_rejected * W';
 %%
-%fn_plot_time_domain(y_reconstructed, trig, fs,1,0);
-%%
-%figure
-%fn_plot_time_domain(y, trig, fs,2,0);
+% Perform ICA on the filtered signal and plot the components
+[y_ica, A, W] = fn_ica_components_plot(y_filtered);
+
+% Prompt user to enter components to reject for each subject
+prompt = 'Enter components to reject for this subject (as array of integers): ';
+components_to_reject = input(prompt);
+
+% Reconstruct the signal after rejecting the selected components
+y_reconstructed = fn_ica_reconstruct(y_ica, A, W, components_to_reject);
+
 %%
 % Define the pre-stimulus and post-stimulus periods in samples
 pre_stimulus_samples = 300;
 post_stimulus_samples = 700;
 
 % Call the function to extract and display epochs
-target_epoch_data = fn_create_epochs(y_reconstructed, trig, pre_stimulus_samples, post_stimulus_samples,1);
-nontarget_epoch_data = fn_create_epochs(y_reconstructed, trig, pre_stimulus_samples, post_stimulus_samples,-1);
+target_epoch_data = fn_create_epochs(y_reconstructed, trig, pre_stimulus_samples, post_stimulus_samples, 1);
+nontarget_epoch_data = fn_create_epochs(y_reconstructed, trig, pre_stimulus_samples, post_stimulus_samples, -1);
 
 %%
-fn_plot_ERP(target_epoch_data,pre_stimulus_samples,post_stimulus_samples,2);
-fn_plot_ERP(nontarget_epoch_data,pre_stimulus_samples,post_stimulus_samples,2);
+% Plot the ERPs
+%fn_plot_ERP(target_epoch_data, pre_stimulus_samples, post_stimulus_samples, 2);
+%fn_plot_ERP(nontarget_epoch_data, pre_stimulus_samples, post_stimulus_samples, 2);
 
 %%
-clc
-clear all
-close all
-addpath("hackathon\customized_dataset\");
-addpath("hackathon\functions\");
-% Load target and nontarget data
-load('target_epoch_data.mat');
-load('nontarget_epoch_data.mat');
-fn_classify(nontarget_epoch_data,target_epoch_data);
+% Classify the epochs and calculate accuracy and AUC
+[accuracy, AUC] = fn_classify(nontarget_epoch_data, target_epoch_data);
+% Ask the user if they want to append the data to the results.csv file
 %%
+fn_results_save_csv(accuracy, AUC)
+%%
+fn_results_plot()

@@ -41,6 +41,7 @@ scores = ldaClassifier.predict(testDataReshaped);
 [X,Y,~,AUC] = perfcurve(testLabels, scores, 1);
 
 % Plot the ROC curve
+figure;
 plot(X,Y);
 xlabel('False positive rate');
 ylabel('True positive rate');
