@@ -13,7 +13,7 @@ y_filtered = fn_filtering(y, fs, 'bandpass', 8, 60,4);
 %%
 %fn_plot_time_domain(y_filtered, trig, fs,2,0);
 %%
-%fn_plot_spectrograms(y,y_filtered,fs)
+fn_plot_spectrograms(y,y_filtered,fs)
 
 %%
 [y_ica, A, W] = fn_ica(y_filtered, 8);
@@ -56,5 +56,14 @@ nontarget_epoch_data = fn_create_epochs(y_reconstructed, trig, pre_stimulus_samp
 fn_plot_ERP(target_epoch_data,pre_stimulus_samples,post_stimulus_samples,2);
 fn_plot_ERP(nontarget_epoch_data,pre_stimulus_samples,post_stimulus_samples,2);
 
-
-
+%%
+clc
+clear all
+close all
+addpath("hackathon\customized_dataset\");
+addpath("hackathon\functions\");
+% Load target and nontarget data
+load('target_epoch_data.mat');
+load('nontarget_epoch_data.mat');
+fn_classify(nontarget_epoch_data,target_epoch_data);
+%%
